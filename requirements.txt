@@ -1,4 +1,11 @@
+langchain_community
 langchain_openai
 langgraph
 langchain
 python-dotenv
+
+pypdf
+chromadb
+langchain-chroma
+
+pygraphviz
