@@ -7,5 +7,6 @@ import operator
 
 class AgentState(TypedDict):
     messages: Annotated[list[AnyMessage], operator.add]
-    llm_calls: int
+    aws_messages: Annotated[list[AnyMessage], operator.add]
+    azure_messages: Annotated[list[AnyMessage], operator.add]
 

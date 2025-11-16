@@ -1,6 +1,7 @@
+import json
 from langchain_core.messages import convert_to_messages
 
-def pretty_print_message(message, indent=False):
+def _pretty_print_message(message, indent=False):
     pretty_message = message.pretty_repr(html=True)
     if not indent:
         print(pretty_message)
@@ -9,8 +10,7 @@ def pretty_print_message(message, indent=False):
     indented = "\n".join("\t" + c for c in pretty_message.split("\n"))
     print(indented)
 
-
-def pretty_print_messages(update, last_message=False):
+def _pretty_print_messages(update, last_message=False):
     is_subgraph = False
     if isinstance(update, tuple):
         ns, update = update
@@ -30,11 +30,32 @@ def pretty_print_messages(update, last_message=False):
 
         print(update_label)
         print("\n")
+        
+        # Try default key
+        if "messages" in node_update:
+            raw_messages = node_update["messages"]
+        else:
+            # Find any key that contains "messages"
+            message_key = next(
+                (k for k in node_update.keys() if "messages" in k.lower()),
+                None
+            )
 
-        messages = convert_to_messages(node_update["messages"])
+            if not message_key:
+                raise KeyError("No messages-like key found in node_update")
+
+            raw_messages = node_update[message_key]
+
+        messages = convert_to_messages(raw_messages)
+
+        
         if last_message:
             messages = messages[-1:]
 
         for m in messages:
-            pretty_print_message(m, indent=is_subgraph)
+            _pretty_print_message(m, indent=is_subgraph)
         print("\n")
+
+def _load_cloud_gpu_data(json_path) -> list[dict]:
+    with json_path.open("r", encoding="utf-8") as f:
+        return json.load(f)

@@ -7,17 +7,20 @@ graph TD;
 	__start__([<p>__start__</p>]):::first
 	lead_researcher(lead_researcher)
 	aws_expert(aws_expert)
+	aws_retrieve(aws_retrieve)
 	azure_expert(azure_expert)
-	retrieve(retrieve)
+	azure_retrieve(azure_retrieve)
 	__end__([<p>__end__</p>]):::last
 	__start__ --> lead_researcher;
+	aws_expert -.-> __end__;
+	aws_expert -. &nbsp;tools&nbsp; .-> aws_retrieve;
 	azure_expert -.-> __end__;
-	azure_expert -. &nbsp;tools&nbsp; .-> retrieve;
+	azure_expert -. &nbsp;tools&nbsp; .-> azure_retrieve;
 	lead_researcher -.-> __end__;
 	lead_researcher -.-> aws_expert;
 	lead_researcher -.-> azure_expert;
-	aws_expert --> __end__;
-	retrieve --> __end__;
+	aws_retrieve --> __end__;
+	azure_retrieve --> __end__;
 	classDef default fill:#f2f0ff,line-height:1.2
 	classDef first fill-opacity:0
 	classDef last fill:#bfb6fc

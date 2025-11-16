@@ -1,25 +1,25 @@
+from pathlib import Path
+from pydantic import BaseModel, Field
+
 from langgraph.graph import START, END
-from langgraph.graph import MessagesState, StateGraph
+from langgraph.graph import StateGraph
 from langgraph.prebuilt import ToolNode, tools_condition
 
+from langchain_chroma import Chroma
 from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
 from langchain_openai import OpenAIEmbeddings
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
-from langchain_classic.tools.retriever import create_retriever_tool
 
-from langchain_chroma import Chroma
-
-from typing_extensions import TypedDict
-from typing import List, Optional, Literal
+from typing import List, Literal, Annotated
 
 from utils.schemas import AgentState
-from utils.func import pretty_print_messages
+from utils.func import _load_cloud_gpu_data
+from utils.func import _pretty_print_messages
 
-from pydantic import BaseModel, Field
-
-from utils.prompts import system_prompt_researcher_lead
+from utils.prompts import system_prompt_aws_expert
 from utils.prompts import system_prompt_azure_expert
+from utils.prompts import system_prompt_researcher_lead
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -34,17 +34,19 @@ embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 
 vectorstore = Chroma(
     embedding_function=embeddings,
-    persist_directory="./app/vec_database/chroma_db",
+    persist_directory="../app/data/vec_database/chroma_db",
     collection_name="langchain"  # default if you didn't change it before
 )
 
-retriever = vectorstore.as_retriever(
-    search_type="similarity_score_threshold",
-    search_kwargs={
-        "k": 5,
-        "score_threshold": 0.5,  # 0.0–1.0 (pensa como 0–100%)
-    },
-)
+CLOUD_GPU_JSON_PATH = Path("../app/data/cloud_gpu_pricing.json")
+
+# retriever = vectorstore.as_retriever(
+#     search_type="similarity_score_threshold",
+#     search_kwargs={
+#         "k": 5,
+#         "score_threshold": 0.5,  # 0.0–1.0 (pensa como 0–100%)
+#     },
+# )
 
 # --------------- Tools ----------------
 @tool("retrieve_azure_information")
@@ -85,6 +87,32 @@ def retrieve_azure_information(query: str) -> dict:
 
     return {"results": filtered}
 
+@tool("retrieve_aws_information")
+def retrieve_aws_information(
+    query: Annotated[str, Field(description="Query for search information")], 
+    provider: Annotated[str, Field(description="Cloud provider name to search")]
+) -> dict:
+    """
+    Search over a local JSON with cloud GPU pricing.
+    It just loads the JSON and filters entries by provider name
+    (e.g. 'AWS', 'Azure', 'GCP').
+    """
+    
+    data = _load_cloud_gpu_data(CLOUD_GPU_JSON_PATH)
+
+    # filtro simples por provider (case-insensitive)
+    provider_lower = provider.lower()
+    filtered = [
+        item for item in data
+        if str(item.get("provider", "")).lower() == provider_lower
+    ]
+
+    return {
+        "query": query,
+        "provider": provider,
+        "count": len(filtered),
+        "results": filtered,
+    }
 
 # --------------- Agents (Nodes) ---------------
 def make_researcher_leader_node(llm: ChatOpenAI, members: list[str]) -> str:
@@ -113,7 +141,15 @@ def make_researcher_leader_node(llm: ChatOpenAI, members: list[str]) -> str:
     
 
 def aws_expert(state: AgentState):
-    return {"messages":[AIMessage(content="Hey I'm here to help")]}
+    """Call the model to generate a response based on the current state. Given
+    the question, it will decide to retrieve using the retriever tool, or simply respond to the user.
+    """
+    system_prompt = SystemMessage(content=system_prompt_aws_expert)
+
+    llm_with_tools = llm.bind_tools([aws_retriever_tool])
+    response = llm_with_tools.invoke([system_prompt] + state["messages"])
+
+    return {"messages": [response], "aws_messages": [response]}
 
 
 def azure_expert(state: AgentState):
@@ -123,14 +159,14 @@ def azure_expert(state: AgentState):
 
     system_prompt = SystemMessage(content=system_prompt_azure_expert)
 
-    llm_with_tools = llm.bind_tools([retriever_tool])
+    llm_with_tools = llm.bind_tools([azure_retriever_tool])
     response = llm_with_tools.invoke([system_prompt] + state["messages"])
 
-    return {"messages": [response]}
+    return {"messages": [response], "azure_messages": [response]}
 
 
 # ------------- Conditional edges -------------
-def research_flow(state) -> Literal["aws_expert", "azure_expert", END]:
+def research_flow(state) -> Literal["aws_expert", "azure_expert",  END]:
     if len(state["next_node"]) > 0:
         return state["next_node"]
     else:
@@ -138,42 +174,46 @@ def research_flow(state) -> Literal["aws_expert", "azure_expert", END]:
     
 
 # ------------- Graph builder -------------
-
 researchers = ["aws_expert", "azure_expert"]
-# retriever_tool = create_retriever_tool(
-#     retriever,
-#     "retrieve_azure_information",
-#     "Search and return information about azure cloud.",
-# )
-retriever_tool = retrieve_azure_information
+azure_retriever_tool = retrieve_azure_information
+aws_retriever_tool = retrieve_aws_information
 
 builder = StateGraph(AgentState)
 builder.add_node("lead_researcher", make_researcher_leader_node(llm, researchers))
 builder.add_node("aws_expert", aws_expert)
+builder.add_node("aws_retrieve", ToolNode(tools=[aws_retriever_tool], messages_key='aws_messages'))
 builder.add_node("azure_expert", azure_expert)
-builder.add_node("retrieve", ToolNode([retriever_tool]))
-
+builder.add_node("azure_retrieve", ToolNode(tools=[azure_retriever_tool], messages_key='azure_messages'))
 builder.add_edge(START, "lead_researcher")
+
 builder.add_conditional_edges(
     "lead_researcher",
     research_flow
 )
 
 builder.add_conditional_edges(
-    "azure_expert",
-    # Assess LLM decision (call `retriever_tool` tool or respond to the user)
+    "aws_expert",
     tools_condition,
     {
-        # Translate the condition outputs to nodes in our graph
-        "tools": "retrieve",
+        "tools": "aws_retrieve",
         END: END,
     },
 )
 
-# builder.add_edge("retrieve", "azure_expert")
-# builder.add_edge("azure_expert", "lead_researcher")
+builder.add_conditional_edges(
+    "azure_expert",
+    tools_condition,
+    {
+        "tools": "azure_retrieve",
+        END: END,
+    },
+)
 
 graph = builder.compile()
+
+# Generate the .mmd to render the graph in .png
+# Once .mmd is generated use the command below to generate the flow:
+#   mmdc -i graph_diagrams/flow.mmd -o graph_diagrams/flow.png
 
 # dot = graph.get_graph().draw_mermaid()
 # with open("./graph_diagrams/flow.mmd", "w", encoding="utf-8") as f:
@@ -183,4 +223,4 @@ graph = builder.compile()
 question = {"messages": [HumanMessage(content="Monte um relatório que mostre o preço médio de GPUs na AWS, Azure, GCP e IBM Cloud, e sugira a opção mais barata por hora de uso")]}
 
 for chunk in graph.stream(question):
-    pretty_print_messages(chunk)
+    _pretty_print_messages(chunk)
