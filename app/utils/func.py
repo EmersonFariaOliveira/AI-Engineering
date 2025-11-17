@@ -1,5 +1,5 @@
-import json
 from langchain_core.messages import convert_to_messages
+
 
 def _pretty_print_message(message, indent=False):
     pretty_message = message.pretty_repr(html=True)
@@ -10,7 +10,8 @@ def _pretty_print_message(message, indent=False):
     indented = "\n".join("\t" + c for c in pretty_message.split("\n"))
     print(indented)
 
-def _pretty_print_messages(update, last_message=False):
+
+def pretty_print_messages(update, last_message=False):
     is_subgraph = False
     if isinstance(update, tuple):
         ns, update = update
@@ -55,7 +56,3 @@ def _pretty_print_messages(update, last_message=False):
         for m in messages:
             _pretty_print_message(m, indent=is_subgraph)
         print("\n")
-
-def _load_cloud_gpu_data(json_path) -> list[dict]:
-    with json_path.open("r", encoding="utf-8") as f:
-        return json.load(f)
