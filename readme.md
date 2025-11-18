@@ -36,3 +36,5 @@ uvicorn server:app --host 0.0.0.0
 
 ## 6. Technical Decisions
 
+
+![Architecture Diagram](./app/graph_diagrams/orchestratorflow.png)
