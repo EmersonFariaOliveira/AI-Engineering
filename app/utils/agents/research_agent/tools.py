@@ -32,34 +32,42 @@ def retrieve_azure_information(query: str) -> dict:
 
     SCORE_THRESHOLD = 0.50
 
-    # Busca com scores
     results = vectorstore.similarity_search_with_relevance_scores(
         query=query,
         k=5,
     )
 
-    filtered = []
+    normalized_results = []
+    max_score_found = None
+
     for doc, score in results:
-        if score < SCORE_THRESHOLD:   # FILTRO AQUI
-            # print(f"Ignoring doc with low score: {score} (Below threshold of {SCORE_THRESHOLD})")
+        max_score_found = score if max_score_found is None else max(max_score_found, score)
+
+        if score < SCORE_THRESHOLD:
+            print(f"Document ignored due to a low score threshold: {score * 100:.2f}%")
             continue
         
-        filtered.append({
+        normalized_results.append({
             "content": doc.page_content,
-            "metadata": doc.metadata,
-            "score": score,
-            "score_percent": round(score * 100, 1),
+            "metadata": {
+                **(doc.metadata or {}),
+                "score": score,
+                "score_percent": round(score * 100, 1),
+            },
         })
     
-    # Se nenhum documento passou do threshold, avisa explicitamente
-    if not filtered:
-        return {
-            "results": [],
-            "message": f"No documents matched the threshold ({SCORE_THRESHOLD*100}%).",
-            "max_score_found": max([s for _, s in results]) if results else None,
-        }
+    response: dict = {
+        "query": query,
+        "provider": "Azure",
+        "count": len(normalized_results),
+        "results": normalized_results,
+    }
 
-    return {"results": filtered}
+    if not normalized_results:
+        response["message"] = f"No documents matched the threshold ({SCORE_THRESHOLD*100}%)."
+        response["max_score_found"] = max_score_found
+
+    return response
 
 
 @tool("retrieve_aws_information")
@@ -75,16 +83,31 @@ def retrieve_aws_information(
     
     data = _load_cloud_gpu_data(CLOUD_GPU_JSON_PATH)
 
-    # filtro simples por provider (case-insensitive)
     provider_lower = provider.lower()
     filtered = [
         item for item in data
         if str(item.get("provider", "")).lower() == provider_lower
     ]
 
-    return {
+    normalized_results = []
+
+    for item in filtered:
+        # Cria uma string “legível” a partir do item
+        content_str = ", ".join(f"{k}: {v}" for k, v in item.items())
+
+        normalized_results.append({
+            "content": content_str,
+            # "metadata": item,   # guarda o JSON completo como metadata
+        })
+
+    response: dict = {
         "query": query,
         "provider": provider,
-        "count": len(filtered),
-        "results": filtered,
+        "count": len(normalized_results),
+        "results": normalized_results,
     }
+
+    if not normalized_results:
+        response["message"] = f"No data found for provider '{provider}'."
+
+    return response

@@ -1,7 +1,7 @@
 system_prompt_researcher_lead = """
 You are a researcher lead tasked with managing a team of specialist researchers: {members}. 
-Given the following user request, respond with the list of specialist reseachers that needs to be involved to act next.
-Each researcher will answer about one specific provider information, if there is no specialist about the user question respond with and empty list.
+Given the following conversation between user and ai, respond with the list of specialist reseachers that needs to be involved to act next.
+Each researcher will answer about one specific provider information in the user question, if there is no specialist about the user question respond with and empty list.
 """
 
 system_prompt_azure_expert = """

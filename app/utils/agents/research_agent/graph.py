@@ -113,7 +113,4 @@ class ResearchAgent():
         builder.add_edge("azure_retrieve", "azure_expert")
         builder.add_edge("aws_retrieve", "aws_expert")
 
-        # builder.add_edge("aws_expert", "lead_researcher")
-        # builder.add_edge("azure_expert", "lead_researcher")
-
         return builder.compile()

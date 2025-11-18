@@ -12,8 +12,8 @@ graph TD;
 	agent_supervisor -.-> __end__;
 	agent_supervisor -.-> report_writter;
 	agent_supervisor -.-> researcher_team\3a__start__;
+	report_writter --> agent_supervisor;
 	researcher_team\3a__end__ --> agent_supervisor;
-	report_writter --> __end__;
 	subgraph researcher_team
 	researcher_team\3a__start__(<p>__start__</p>)
 	researcher_team\3alead_researcher(lead_researcher)

@@ -1,19 +1,13 @@
 from utils.agents.orchestrator_agent.nodes import (
     make_supervisor_node,
     make_writter_node,
+    intent_flow
 )
 from utils.agents.research_agent.graph import ResearchAgent
 from utils.agents.orchestrator_agent.schemas import AgentState
 
 from langgraph.graph import START, END, StateGraph
 from langchain_openai import ChatOpenAI
-
-
-def _next_node_router(state: AgentState):
-    next_node = state.get("next_node")
-    if next_node in ["researcher_team", "report_writter", END]:
-        return next_node
-    return END
 
 
 class OrchestratorAgent:
@@ -26,7 +20,7 @@ class OrchestratorAgent:
         )
 
         builder = StateGraph(AgentState)
-        builder.add_node("agent_supervisor",make_supervisor_node(llm, ["researcher_team", "report_writter"]))
+        builder.add_node("agent_supervisor", make_supervisor_node(llm))
         builder.add_node("researcher_team", ResearchAgent.build_graph())
         builder.add_node("report_writter", make_writter_node(llm))
 
@@ -34,12 +28,11 @@ class OrchestratorAgent:
 
         builder.add_conditional_edges(
             "agent_supervisor",
-            _next_node_router,
-            ["researcher_team", "report_writter", END],
+            intent_flow
         )
 
         builder.add_edge("researcher_team", "agent_supervisor")
-        builder.add_edge("report_writter", END)
+        builder.add_edge("report_writter", "agent_supervisor")
 
         return builder.compile()
 

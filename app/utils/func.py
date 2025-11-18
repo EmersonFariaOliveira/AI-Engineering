@@ -56,3 +56,12 @@ def pretty_print_messages(update, last_message=False):
         for m in messages:
             _pretty_print_message(m, indent=is_subgraph)
         print("\n")
+
+
+def generate_mermaid(graph, path_to_save = './flow.mmd'): 
+    # Generate the .mmd to render the graph in .png 
+    # Once .mmd is generated use the command below to generate the flow: 
+    # mmdc -i graph_diagrams/flow.mmd -o graph_diagrams/flow.png 
+    dot = graph.get_graph(xray=True).draw_mermaid() 
+    with open(path_to_save, "w", encoding="utf-8") as f: 
+        f.write(dot)
