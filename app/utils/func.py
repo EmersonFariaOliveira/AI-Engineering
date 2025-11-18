@@ -13,6 +13,21 @@ def _pretty_print_message(message, indent=False):
 
 def pretty_print_messages(update, last_message=False):
     is_subgraph = False
+
+    # CASO 1: veio uma lista de mensagens (ex: result["messages"] do ainvoke)
+    if isinstance(update, list):
+        messages = convert_to_messages(update)
+
+        if last_message:
+            messages = messages[-1:]
+
+        print("Update from state (messages list):\n")
+        for m in messages:
+            _pretty_print_message(m, indent=False)
+        print("\n")
+        return
+
+    # CASO 2: tuple (ns, update) vindo do graph.stream / astream
     if isinstance(update, tuple):
         ns, update = update
         # skip parent graph updates in the printouts
@@ -24,6 +39,7 @@ def pretty_print_messages(update, last_message=False):
         print("\n")
         is_subgraph = True
 
+    # CASO 3: dict no formato {node_name: node_update}
     for node_name, node_update in update.items():
         update_label = f"Update from node {node_name}:"
         if is_subgraph:
@@ -49,7 +65,6 @@ def pretty_print_messages(update, last_message=False):
 
         messages = convert_to_messages(raw_messages)
 
-        
         if last_message:
             messages = messages[-1:]
 

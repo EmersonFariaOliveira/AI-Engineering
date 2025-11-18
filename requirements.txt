@@ -8,4 +8,5 @@ pypdf
 chromadb
 langchain-chroma
 
-pygraphviz
+fastapi
+template

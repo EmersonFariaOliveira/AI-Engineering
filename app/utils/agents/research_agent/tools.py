@@ -44,7 +44,7 @@ def retrieve_azure_information(query: str) -> dict:
         max_score_found = score if max_score_found is None else max(max_score_found, score)
 
         if score < SCORE_THRESHOLD:
-            print(f"Document ignored due to a low score threshold: {score * 100:.2f}%")
+            # print(f"Document ignored due to a low score threshold: {score * 100:.2f}%")
             continue
         
         normalized_results.append({

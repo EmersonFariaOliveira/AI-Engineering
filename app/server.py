@@ -1,25 +1,70 @@
 from dotenv import load_dotenv
 load_dotenv()
 
+from fastapi import FastAPI,WebSocket
+from fastapi.responses import HTMLResponse
+from fastapi.responses import JSONResponse
 from utils.agents.orchestrator_agent.graph import OrchestratorAgent
-# from utils.agents.research_agent.graph import ResearchAgent
 from utils.func import pretty_print_messages
-from utils.func import generate_mermaid
+from pydantic import BaseModel
+from template import html
+import time
+import uuid
 
-from langchain_core.messages import  HumanMessage
 
-def main():
+graph = OrchestratorAgent.build_graph()
 
-    print("Starting application...")
-    graph = OrchestratorAgent.build_graph()
-    # graph = ResearchAgent.build_graph()
-    generate_mermaid(graph, "./graph_diagrams/orchestratorflow.mmd")
-    # generate_mermaid(graph, "./graph_diagrams/ResearchAgent.mmd")
+app = FastAPI()
 
-    # question = {"messages": [HumanMessage(content="Crie um relatorio levantando as principais diferenças entre Azure e AWS em termos de estrategias de scalling?")]}
-    question = {"messages": [HumanMessage(content="Monte um relatório que mostre o preço médio de GPUs na AWS, Azure e GCP, e sugira a opção mais barata por hora de uso")]}
-    for chunk in graph.stream(question):
-        pretty_print_messages(chunk)
+class ChatInput(BaseModel):
+    messages: list[str]
+    thread_id: str
 
-if __name__ == "__main__":
-    main()
+@app.post("/chat")
+async def chat(input: ChatInput):
+    config = {"configurable": {"thread_id": input.thread_id}}
+    result = await graph.ainvoke({"messages": input.messages}, config=config)
+
+    pretty_print_messages(result["messages"])
+
+    last_msg = result["messages"][-1]  # AIMessage
+    content = last_msg.content
+
+    reference_data = result.get("team_lead_response", [])
+
+    response_payload = {
+        "id": f"chatcmpl-{uuid.uuid4()}",
+        "object": "chat.completion",
+        "created": int(time.time()),
+        "model": "my-agent-model",  # você pode colocar o nome que quiser
+        "choices": [
+            {
+                "index": 0,
+                "message": {
+                    "role": "assistant",
+                    "content": content
+                },
+                "finish_reason": "stop"
+            }
+        ],
+        "references": reference_data
+    }
+
+    return JSONResponse(content=response_payload)
+
+
+# Streaming
+# Serve the HTML chat interface
+@app.get("/")
+async def get():
+    return HTMLResponse(html)
+
+# WebSocket endpoint for real-time streaming
+@app.websocket("/ws/{thread_id}")
+async def websocket_endpoint(websocket: WebSocket, thread_id: str):
+    config = {"configurable": {"thread_id": thread_id}}
+    await websocket.accept()
+    while True:
+        data = await websocket.receive_text()
+        async for event in graph.astream({"messages": [data]}, config=config, stream_mode="messages"):
+            await websocket.send_text(event[0].content)
