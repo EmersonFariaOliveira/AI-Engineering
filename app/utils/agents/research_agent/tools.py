@@ -12,7 +12,7 @@ embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 
 vectorstore = Chroma(
     embedding_function=embeddings,
-    persist_directory="../app/data/vec_database/chroma_db",
+    persist_directory="../app/data/chroma_db",
     collection_name="langchain"  # default if you didn't change it before
 )
 
