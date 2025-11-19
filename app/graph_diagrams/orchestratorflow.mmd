@@ -21,6 +21,8 @@ graph TD;
 	researcher_team\3aaws_retrieve(aws_retrieve)
 	researcher_team\3aazure_expert(azure_expert)
 	researcher_team\3aazure_retrieve(azure_retrieve)
+	researcher_team\3agcp_expert(gcp_expert)
+	researcher_team\3agcp_retrieve(gcp_retrieve)
 	researcher_team\3a__end__(<p>__end__</p>)
 	researcher_team\3a__start__ --> researcher_team\3alead_researcher;
 	researcher_team\3aaws_expert -. &nbsp;tools&nbsp; .-> researcher_team\3aaws_retrieve;
@@ -29,9 +31,13 @@ graph TD;
 	researcher_team\3aazure_expert -. &nbsp;tools&nbsp; .-> researcher_team\3aazure_retrieve;
 	researcher_team\3aazure_expert -. &nbsp;__end__&nbsp; .-> researcher_team\3alead_researcher;
 	researcher_team\3aazure_retrieve --> researcher_team\3aazure_expert;
+	researcher_team\3agcp_expert -. &nbsp;tools&nbsp; .-> researcher_team\3agcp_retrieve;
+	researcher_team\3agcp_expert -. &nbsp;__end__&nbsp; .-> researcher_team\3alead_researcher;
+	researcher_team\3agcp_retrieve --> researcher_team\3agcp_expert;
 	researcher_team\3alead_researcher -.-> researcher_team\3a__end__;
 	researcher_team\3alead_researcher -.-> researcher_team\3aaws_expert;
 	researcher_team\3alead_researcher -.-> researcher_team\3aazure_expert;
+	researcher_team\3alead_researcher -.-> researcher_team\3agcp_expert;
 	end
 	classDef default fill:#f2f0ff,line-height:1.2
 	classDef first fill-opacity:0

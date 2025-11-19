@@ -1,0 +1,139 @@
+[
+  {
+    "id": "aws_g4dn_xlarge_us_east_1",
+    "provider": "AWS",
+    "instance_family": "g4dn.xlarge",
+    "gpu_type": "NVIDIA T4",
+    "gpu_count": 1,
+    "average_price_usd_per_hour": 0.526,
+    "region": "us-east-1"
+  },
+  {
+    "id": "aws_g5_xlarge_us_east_1",
+    "provider": "AWS",
+    "instance_family": "g5.xlarge",
+    "gpu_type": "NVIDIA A10G",
+    "gpu_count": 1,
+    "average_price_usd_per_hour": 0.75,
+    "region": "us-east-1"
+  },
+  {
+    "id": "aws_g5_2xlarge_us_west_2",
+    "provider": "AWS",
+    "instance_family": "g5.2xlarge",
+    "gpu_type": "NVIDIA A10G",
+    "gpu_count": 1,
+    "average_price_usd_per_hour": 1.14,
+    "region": "us-west-2"
+  },
+  {
+    "id": "aws_p3_2xlarge_us_east_1",
+    "provider": "AWS",
+    "instance_family": "p3.2xlarge",
+    "gpu_type": "NVIDIA V100",
+    "gpu_count": 1,
+    "average_price_usd_per_hour": 3.06,
+    "region": "us-east-1"
+  },
+  {
+    "id": "aws_p4d_24xlarge_us_east_1",
+    "provider": "AWS",
+    "instance_family": "p4d.24xlarge",
+    "gpu_type": "NVIDIA A100 40GB",
+    "gpu_count": 8,
+    "average_price_usd_per_hour": 32.77,
+    "region": "us-east-1"
+  },
+  {
+    "id": "aws_p5_48xlarge_us_west_2",
+    "provider": "AWS",
+    "instance_family": "p5.48xlarge",
+    "gpu_type": "NVIDIA H100",
+    "gpu_count": 8,
+    "average_price_usd_per_hour": 98.32,
+    "region": "us-west-2"
+  },
+  {
+    "id": "aws_inf2_xlarge_us_east_2",
+    "provider": "AWS",
+    "instance_family": "inf2.xlarge",
+    "gpu_type": "AWS Inferentia2",
+    "gpu_count": 1,
+    "average_price_usd_per_hour": 0.75,
+    "region": "us-east-2"
+  },
+
+  {
+    "id": "azure_ncads_a100_eastus",
+    "provider": "Azure",
+    "instance_family": "Standard_NC24ads_A100_v4",
+    "gpu_type": "NVIDIA A100 80GB",
+    "gpu_count": 1,
+    "average_price_usd_per_hour": 3.40,
+    "region": "eastus"
+  },
+  {
+    "id": "azure_nd96asr_a100_v4_eastus",
+    "provider": "Azure",
+    "instance_family": "Standard_ND96asr_A100_v4",
+    "gpu_type": "NVIDIA A100 80GB",
+    "gpu_count": 8,
+    "average_price_usd_per_hour": 28.50,
+    "region": "eastus"
+  },
+  {
+    "id": "azure_nvads_a10_v5_westeurope",
+    "provider": "Azure",
+    "instance_family": "Standard_NVadsA10_v5",
+    "gpu_type": "NVIDIA A10",
+    "gpu_count": 1,
+    "average_price_usd_per_hour": 1.40,
+    "region": "westeurope"
+  },
+  {
+    "id": "azure_nc4as_t4_v3_eastus",
+    "provider": "Azure",
+    "instance_family": "Standard_NC4as_T4_v3",
+    "gpu_type": "NVIDIA T4",
+    "gpu_count": 1,
+    "average_price_usd_per_hour": 0.85,
+    "region": "eastus"
+  },
+
+  {
+    "id": "gcp_a2_ultragpu_1g_europe_west4",
+    "provider": "GCP",
+    "instance_family": "a2-ultragpu-1g",
+    "gpu_type": "NVIDIA A100 40GB",
+    "gpu_count": 1,
+    "average_price_usd_per_hour": 2.80,
+    "region": "europe-west4"
+  },
+  {
+    "id": "gcp_a2_ultragpu_8g_us_central1",
+    "provider": "GCP",
+    "instance_family": "a2-ultragpu-8g",
+    "gpu_type": "NVIDIA A100 40GB",
+    "gpu_count": 8,
+    "average_price_usd_per_hour": 22.40,
+    "region": "us-central1"
+  },
+  {
+    "id": "gcp_g2_standard_4_us_central1",
+    "provider": "GCP",
+    "instance_family": "g2-standard-4",
+    "gpu_type": "NVIDIA L4",
+    "gpu_count": 1,
+    "average_price_usd_per_hour": 0.95,
+    "region": "us-central1"
+  },
+  {
+    "id": "gcp_t4_vm_n1_standard_8_us_east1",
+    "provider": "GCP",
+    "instance_family": "n1-standard-8-t4",
+    "gpu_type": "NVIDIA T4",
+    "gpu_count": 1,
+    "average_price_usd_per_hour": 0.70,
+    "region": "us-east1"
+  }
+]

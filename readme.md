@@ -23,7 +23,7 @@ The system supports real-time chat via WebSocket and REST API interaction using 
 
 ## 🚀 Setup Instructions
 
-## 1. Create a Virtual Environment and Install Dependencies
+### 1. Create a Virtual Environment and Install Dependencies
 
 ``` bash
 python3 -m venv venv
@@ -35,7 +35,7 @@ pip install -r requirements.txt
 
 ------------------------------------------------------------------------
 
-## 2. Configure Environment Variables (Required)
+### 2. Configure Environment Variables (Required)
 
 In the project root, locate the file:
 
@@ -55,7 +55,7 @@ This key is required for all LLM operations.
 
 ------------------------------------------------------------------------
 
-## 3. Prepare RAG Data (Required Before Running the Agent)
+### 3. Prepare RAG Data (Required Before Running the Agent)
 
 The Azure expert relies on a **ChromaDB vector store** built from a fake
 Azure document.
@@ -68,7 +68,7 @@ python rag/build_chroma.py
 
 ------------------------------------------------------------------------
 
-## 4. Start the Mock API for the AWS Expert
+### 4. Start the Mock API for the GCP Expert
 
 ``` bash
 python mock_api/server.py
@@ -76,12 +76,12 @@ python mock_api/server.py
 
 ------------------------------------------------------------------------
 
-## 5. Run the FastAPI Server
+### 5. Run the FastAPI Server
 
 After preparing the RAG data and mock API:
 
 ``` bash
-uvicorn server:app --host 0.0.0.0 --port 8000
+uvicorn server:app --port 8000
 ```
 
 The server provides:
@@ -91,7 +91,12 @@ The server provides:
 
 ------------------------------------------------------------------------
 
-##  💬 Using the REST API
+##  💬 Chat with agent
+
+### 1. Using the REST API
+
+Using REST API will show all the information in the logs related to agent internal communication.
+Also it includes on the reponse the source data used to answer the user question.
 
 ### POST /completions
 
@@ -103,6 +108,14 @@ The server provides:
   "thread_id": "12345"
 }
 ```
+
+### 2. Using WEB Interface
+
+Copy the link below to the web browser and interact to see the real time agent response:
+```
+http://127.0.0.1:8000
+```
+
 
 ------------------------------------------------------------------------
 

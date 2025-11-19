@@ -17,7 +17,7 @@ def main():
     # generate_mermaid(graph, "./graph_diagrams/ResearchAgent.mmd")
 
     # question = {"messages": [HumanMessage(content="Crie um relatorio levantando as principais diferenças entre Azure e AWS em termos de estrategias de scalling?")]}
-    question = {"messages": [HumanMessage(content="Monte um relatório que mostre o preço médio de GPUs na AWS, Azure e GCP, e sugira a opção mais barata por hora de uso")]}
+    question = {"messages": [HumanMessage(content="Monte um relatório que mostre o preço médio de GPUs no GCP, e sugira a opção mais barata por hora de uso")]}
     for chunk in graph.stream(question):
         pretty_print_messages(chunk)
 

@@ -10,6 +10,7 @@ class AgentState(MessagesState):
 	messages: Annotated[list[AnyMessage], add_messages]
 	aws_messages: Annotated[list[AnyMessage], add_messages]
 	azure_messages: Annotated[list[AnyMessage], add_messages]
+	gcp_messages: Annotated[list[AnyMessage], add_messages]
 	missing_researchers: List[str]
 	team_activated: bool = False
 	ai_intent: str = None

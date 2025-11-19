@@ -9,4 +9,5 @@ chromadb
 langchain-chroma
 
 fastapi
+flask
 template

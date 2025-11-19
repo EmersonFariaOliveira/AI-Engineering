@@ -12,10 +12,12 @@ from utils.agents.research_agent.schemas import context_schema
 
 from utils.agents.research_agent.prompts import system_prompt_aws_expert
 from utils.agents.research_agent.prompts import system_prompt_azure_expert
+from utils.agents.research_agent.prompts import system_prompt_gcp_expert
 from utils.agents.research_agent.prompts import system_prompt_researcher_lead
 
 from utils.agents.research_agent.tools import retrieve_aws_information
 from utils.agents.research_agent.tools import retrieve_azure_information
+from utils.agents.research_agent.tools import retrieve_gcp_information
 
 
 import json
@@ -102,16 +104,18 @@ def make_researcher_leader_node(llm: ChatOpenAI, members: list[str]) -> str:
 
         azure_response = state.get("azure_messages", [])
         aws_response = state.get("aws_messages", [])
+        gcp_response = state.get("gcp_messages", [])
 
         # -----------------------------
         # 1) Já temos retorno das tools?
         # -----------------------------
-        if len(azure_response) > 1 or len(aws_response) > 1:
+        if len(azure_response) > 1 or len(aws_response) > 1 or len(gcp_response) > 1:
             azure_content, azure_metadata = _extract_tool_payload(azure_response, "Azure")
             aws_content, aws_metadata = _extract_tool_payload(aws_response, "AWS")
+            gcp_content, gcp_metadata = _extract_tool_payload(gcp_response, "GCP")
 
             update = {
-                "messages": azure_response + aws_response + [
+                "messages": azure_response + aws_response + gcp_response + [
                     AIMessage(
                         content="Data collected, forwarding the results to report writter agent"
                     )
@@ -142,6 +146,16 @@ def make_researcher_leader_node(llm: ChatOpenAI, members: list[str]) -> str:
             if aws_data:
                 aws_data["provider"] = "aws"
                 team_lead_response.append(aws_data)
+
+            # -------- GCP --------
+            gcp_data = {}
+            if gcp_content != "":
+                gcp_data["content"] = gcp_content
+            if gcp_metadata is not None:
+                gcp_data["metadata"] = gcp_metadata
+            if gcp_data:
+                gcp_data["provider"] = "gcp"
+                team_lead_response.append(gcp_data)
 
             update["team_lead_response"] = team_lead_response
 
@@ -212,9 +226,29 @@ def make_azure_expert_node(llm: ChatOpenAI) -> str:
     
     return azure_expert
 
+def make_gcp_expert_node(llm: ChatOpenAI) -> str:
+    
+    system_prompt = system_prompt_gcp_expert
+
+    def gcp_expert(state: AgentState):
+        """Call the model to generate a response based on the current state. Given
+        the question, it will decide to retrieve using the retriever tool, or simply respond to the user.
+        """
+        gcp_response = state.get("gcp_messages", [])
+        if len(gcp_response) > 1:
+            return {"messages": []}
+        messages = [SystemMessage(content=system_prompt)] + state["messages"]
+
+        llm_with_tools = llm.bind_tools([retrieve_gcp_information])
+        response = llm_with_tools.invoke(messages)
+
+        return {"messages": [], "gcp_messages": [response]}
+    
+    return gcp_expert
+
 
 # --------- Conditional edges ---------
-def research_flow(state) -> Literal["aws_expert", "azure_expert", END]:
+def research_flow(state) -> Literal["aws_expert", "azure_expert", "gcp_expert", END]:
     if len(state["next_node"]) > 0:
         return state["next_node"]
     else:
