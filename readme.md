@@ -61,16 +61,19 @@ The Azure expert relies on a **ChromaDB vector store** built from a fake
 Azure document.
 
 Build the database:
-
 ``` bash
-python rag/build_chroma.py
+cd rag
+python build_chroma.py
+cd ..
 ```
 
 ------------------------------------------------------------------------
 
 ### 4. Start the Mock API for the GCP Expert
-
+Open a new terminal and start the Mock API
 ``` bash
+source venv/bin/activate      # Linux/Mac
+venv\Scripts\activate         # Windows
 python mock_api/server.py
 ```
 
@@ -81,6 +84,7 @@ python mock_api/server.py
 After preparing the RAG data and mock API:
 
 ``` bash
+cd app
 uvicorn server:app --port 8000
 ```
 
