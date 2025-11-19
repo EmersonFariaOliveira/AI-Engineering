@@ -1,0 +1,44 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	agent_supervisor(agent_supervisor)
+	report_writter(report_writter)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> agent_supervisor;
+	agent_supervisor -.-> __end__;
+	agent_supervisor -.-> report_writter;
+	agent_supervisor -.-> researcher_team\3a__start__;
+	report_writter --> agent_supervisor;
+	researcher_team\3a__end__ --> agent_supervisor;
+	subgraph researcher_team
+	researcher_team\3a__start__(<p>__start__</p>)
+	researcher_team\3alead_researcher(lead_researcher)
+	researcher_team\3aaws_expert(aws_expert)
+	researcher_team\3aaws_retrieve(aws_retrieve)
+	researcher_team\3aazure_expert(azure_expert)
+	researcher_team\3aazure_retrieve(azure_retrieve)
+	researcher_team\3agcp_expert(gcp_expert)
+	researcher_team\3agcp_retrieve(gcp_retrieve)
+	researcher_team\3a__end__(<p>__end__</p>)
+	researcher_team\3a__start__ --> researcher_team\3alead_researcher;
+	researcher_team\3aaws_expert -. &nbsp;tools&nbsp; .-> researcher_team\3aaws_retrieve;
+	researcher_team\3aaws_expert -. &nbsp;__end__&nbsp; .-> researcher_team\3alead_researcher;
+	researcher_team\3aaws_retrieve --> researcher_team\3aaws_expert;
+	researcher_team\3aazure_expert -. &nbsp;tools&nbsp; .-> researcher_team\3aazure_retrieve;
+	researcher_team\3aazure_expert -. &nbsp;__end__&nbsp; .-> researcher_team\3alead_researcher;
+	researcher_team\3aazure_retrieve --> researcher_team\3aazure_expert;
+	researcher_team\3agcp_expert -. &nbsp;tools&nbsp; .-> researcher_team\3agcp_retrieve;
+	researcher_team\3agcp_expert -. &nbsp;__end__&nbsp; .-> researcher_team\3alead_researcher;
+	researcher_team\3agcp_retrieve --> researcher_team\3agcp_expert;
+	researcher_team\3alead_researcher -.-> researcher_team\3a__end__;
+	researcher_team\3alead_researcher -.-> researcher_team\3aaws_expert;
+	researcher_team\3alead_researcher -.-> researcher_team\3aazure_expert;
+	researcher_team\3alead_researcher -.-> researcher_team\3agcp_expert;
+	end
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc
